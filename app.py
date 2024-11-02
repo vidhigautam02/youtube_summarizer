@@ -20,11 +20,28 @@ generation_config = {
 }
 
 # Set up Google Cloud credentials using Streamlit secrets
-service_account_info = json.loads(st.secrets["SERVICE_ACCOUNT_JSON"])
-credentials = service_account.Credentials.from_service_account_info(service_account_info)
+gdrive_credentials = st.secrets["gdrive_credentials"]
+
+    # Extract values from the secrets
+    credentials_info = {
+        "type": gdrive_credentials["type"],
+        "project_id": gdrive_credentials["project_id"],
+        "private_key_id": gdrive_credentials["private_key_id"],
+        "private_key": gdrive_credentials["private_key"].replace("\\n", "\n"),  # Replace \n with actual new line
+        "client_email": gdrive_credentials["client_email"],
+        "client_id": gdrive_credentials["client_id"],
+        "auth_uri": gdrive_credentials["auth_uri"],
+        "token_uri": gdrive_credentials["token_uri"],
+        "auth_provider_x509_cert_url": gdrive_credentials["auth_provider_x509_cert_url"],
+        "client_x509_cert_url": gdrive_credentials["client_x509_cert_url"],
+    }
+
+    # Authenticate with Google Drive API using the credentials
+    credentials = service_account.Credentials.from_service_account_info(credentials_info)
 
 # Define the path for FFmpeg from Streamlit secrets
-FFMPEG_PATH = st.secrets["FFMPEG_PATH"]
+FFMPEG_PATH = 'ffmpeg'  # No path needed for Streamlit Cloud or Linux servers
+
 
 def download_youtube_audio(url):
     """Downloads audio from a YouTube video."""
