@@ -1,54 +1,120 @@
+import os
+import yt_dlp
+import whisper
 import streamlit as st
 from dotenv import load_dotenv
-
-load_dotenv() 
-import os
 import google.generativeai as genai
+from google.oauth2 import service_account
+import librosa
+import numpy as np
+import soundfile as sf
 
-from youtube_transcript_api import YouTubeTranscriptApi
+# Load environment variables
+load_dotenv()
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+# Configure genai with Google API key for Gemini model
+genai.configure(api_key=GOOGLE_API_KEY)
 
-prompt="""You are Yotube video summarizer. You will be taking the transcript text
-and summarizing the entire video and providing the important summary in points
-within 250 words. Please provide the summary of the text given here:  """
+# Set up generation configuration for Google Gemini
+generation_config = {
+    "temperature": 0.1,
+    "max_output_tokens": 1200,
+}
 
+# Set up Google Cloud credentials
+credentials = service_account.Credentials.from_service_account_file(r"credentials\gen-lang-client-0244046939-8dce767c317a.json")
 
-## getting the transcript data from yt videos
-def extract_transcript_details(youtube_video_url):
+def download_youtube_audio(url):
+    """Downloads audio from a YouTube video."""
+    options = {
+        'format': 'bestaudio',
+        'outtmpl': 'downloads/%(title)s.%(ext)s',
+        'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'wav', 'preferredquality': '192'}],
+        'ffmpeg_location': 'C:\\ffmpeg-2024-10-27-git-bb57b78013-essentials_build\\bin'  # Update with your FFmpeg path
+    }
     try:
-        video_id=youtube_video_url.split("=")[1]
-        
-        transcript_text=YouTubeTranscriptApi.get_transcript(video_id)
-
-        transcript = ""
-        for i in transcript_text:
-            transcript += " " + i["text"]
-
-        return transcript
-
+        with yt_dlp.YoutubeDL(options) as ydl:
+            info = ydl.extract_info(url, download=True)
+            return ydl.prepare_filename(info).replace('.webm', '.wav').replace('.m4a', '.wav')
     except Exception as e:
-        raise e
+        st.error(f"Error downloading audio: {e}")
+        return None
+
+def sample_audio_segments(audio_path, segment_duration=10, skip_duration=20):
+    """Samples audio by taking segments every skip_duration."""
+    audio, sr = librosa.load(audio_path, sr=None)
+    total_duration = librosa.get_duration(y=audio, sr=sr)
     
-## getting the summary based on Prompt from Google Gemini Pro
-def generate_gemini_content(transcript_text,prompt):
+    samples = []
+    for start in np.arange(0, total_duration, skip_duration):
+        start_sample = int(start * sr)
+        end_sample = int(min((start + segment_duration) * sr, len(audio)))
+        samples.append(audio[start_sample:end_sample])
+    
+    sample_path = f"{audio_path}_sampled.wav"
+    sf.write(sample_path, np.concatenate(samples), sr)
+    return sample_path
 
-    model=genai.GenerativeModel("gemini-pro")
-    response=model.generate_content(prompt+transcript_text)
-    return response.text
+def transcribe_audio_whisper(audio_path):
+    """Transcribes sampled audio to text using Whisper tiny model."""
+    model = whisper.load_model("tiny")  # Load Whisper tiny model for speed
+    result = model.transcribe(audio_path)
+    return result["text"]
 
-st.title("YouTube Transcript to Detailed Notes Converter")
-youtube_link = st.text_input("Enter YouTube Video Link:")
+def summarize_with_gemini(text):
+    prompt = f"""
+    Please provide a detailed and structured summary of the following YouTube video transcription. Organize the summary into the following sections: 
 
-if youtube_link:
-    video_id = youtube_link.split("=")[1]
-    print(video_id)
-    st.image(f"http://img.youtube.com/vi/{video_id}/0.jpg", use_column_width=True)
+    1. **Introduction**: Briefly describe the main topic and purpose of the video.
+    2. **Key Points**: Outline the major points discussed, including any important arguments, examples, or data presented.
+    3. **Conclusion**: Summarize the final thoughts or conclusions drawn in the video.
+    4. **Takeaways**: Highlight any actionable insights or lessons learned from the video.
 
-if st.button("Get Detailed Notes"):
-    transcript_text=extract_transcript_details(youtube_link)
+    Transcription:
 
-    if transcript_text:
-        summary=generate_gemini_content(transcript_text,prompt)
-        st.markdown("## Detailed Notes:")
-        st.write(summary)
+    
+{text}
+
+    """
+    try:
+        model = genai.GenerativeModel(model_name="gemini-1.5-flash", generation_config=generation_config)
+        response = model.generate_content(prompt)
+        
+        # Extract and return the summary
+        if hasattr(response, 'candidates') and len(response.candidates) > 0:
+            return response.candidates[0].content.parts[0].text
+        else:
+            return "No summary available."
+    except Exception as e:
+        st.error(f"Error generating summary: {e}")
+        return "Error generating summary."
+
+# Streamlit Interface
+st.title("YouTube Video Summarizer")
+url = st.text_input("Enter YouTube Video URL")
+
+if st.button("Summarize Video"):
+    if url:
+        st.write("Downloading audio from YouTube...")
+        audio_file_path = download_youtube_audio(url)
+
+        if audio_file_path:
+            st.write("Sampling audio for faster processing...")
+            sampled_audio_path = sample_audio_segments(audio_file_path)
+
+            st.write("Transcribing sampled audio to text...")
+            transcribed_text = transcribe_audio_whisper(sampled_audio_path)
+
+            if transcribed_text:
+                st.write("Summarizing the text...")
+                summary = summarize_with_gemini(transcribed_text)
+
+                if summary:
+                    # Show the summary in full screen without a scrollbar
+                    st.markdown("<div style='height: 100vh; overflow: hidden;'><h3>Summary:</h3><p>{}</p></div>".format(summary), unsafe_allow_html=True)
+
+                    # Option to download the summary
+                    st.download_button("Download Summary", summary, file_name="summary.txt")
+    else:
+        st.error("Please enter a valid YouTube URL.")
