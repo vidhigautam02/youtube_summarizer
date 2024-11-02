@@ -31,7 +31,8 @@ def download_youtube_audio(url):
         'format': 'bestaudio',
         'outtmpl': 'downloads/%(title)s.%(ext)s',
         'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'wav', 'preferredquality': '192'}],
-        'ffmpeg_location': 'C:\\ffmpeg-2024-10-27-git-bb57b78013-essentials_build\\bin'  # Update with your FFmpeg path
+        'ffmpeg_location': 'ffmpeg'  # No path needed for Streamlit Cloud or Linux servers
+ # Update with your FFmpeg path
     }
     try:
         with yt_dlp.YoutubeDL(options) as ydl:
