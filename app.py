@@ -10,7 +10,7 @@ import os
 import json
 
 # Configure genai with Google API key for Gemini model using Streamlit secrets
-GOOGLE_API_KEY = st.secrets["google_api"]["GOOGLE_API_KEY"]:
+GOOGLE_API_KEY = st.secrets["google_api"]["GOOGLE_API_KEY"]
 genai.configure(api_key=GOOGLE_API_KEY)
 
 # Set up generation configuration for Google Gemini
