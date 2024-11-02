@@ -49,7 +49,7 @@ def download_youtube_audio(url):
         'format': 'bestaudio',
         'outtmpl': 'downloads/%(title)s.%(ext)s',
         'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'wav', 'preferredquality': '192'}],
-        'ffmpeg_location': 'ffmpeg'
+        'ffmpeg_location': "/usr/bin/ffmpeg"
     }
     try:
         with yt_dlp.YoutubeDL(options) as ydl:
