@@ -8,6 +8,8 @@ import numpy as np
 import soundfile as sf
 import os
 import json
+import subprocess
+
 
 # Configure genai with Google API key for Gemini model using Streamlit secrets
 GOOGLE_API_KEY = st.secrets["google_api"]["GOOGLE_API_KEY"]
