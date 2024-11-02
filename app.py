@@ -40,7 +40,7 @@ credentials_info = {
 credentials = service_account.Credentials.from_service_account_info(credentials_info)
 
 # Define the path for FFmpeg from Streamlit secrets
-FFMPEG_PATH = 'ffmpeg'  # No path needed for Streamlit Cloud or Linux servers
+ # No path needed for Streamlit Cloud or Linux servers
 
 
 def download_youtube_audio(url):
@@ -49,7 +49,7 @@ def download_youtube_audio(url):
         'format': 'bestaudio',
         'outtmpl': 'downloads/%(title)s.%(ext)s',
         'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'wav', 'preferredquality': '192'}],
-        'ffmpeg_location': FFMPEG_PATH
+        'ffmpeg_location': 'ffmpeg'
     }
     try:
         with yt_dlp.YoutubeDL(options) as ydl:
