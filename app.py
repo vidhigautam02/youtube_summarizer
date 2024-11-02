@@ -23,7 +23,7 @@ generation_config = {
 gdrive_credentials = st.secrets["gdrive_credentials"]
 
     # Extract values from the secrets
-    credentials_info = {
+credentials_info = {
         "type": gdrive_credentials["type"],
         "project_id": gdrive_credentials["project_id"],
         "private_key_id": gdrive_credentials["private_key_id"],
@@ -34,10 +34,10 @@ gdrive_credentials = st.secrets["gdrive_credentials"]
         "token_uri": gdrive_credentials["token_uri"],
         "auth_provider_x509_cert_url": gdrive_credentials["auth_provider_x509_cert_url"],
         "client_x509_cert_url": gdrive_credentials["client_x509_cert_url"],
-    }
+}
 
     # Authenticate with Google Drive API using the credentials
-    credentials = service_account.Credentials.from_service_account_info(credentials_info)
+credentials = service_account.Credentials.from_service_account_info(credentials_info)
 
 # Define the path for FFmpeg from Streamlit secrets
 FFMPEG_PATH = 'ffmpeg'  # No path needed for Streamlit Cloud or Linux servers
