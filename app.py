@@ -1,19 +1,16 @@
-import os
 import yt_dlp
 import whisper
 import streamlit as st
-from dotenv import load_dotenv
 import google.generativeai as genai
 from google.oauth2 import service_account
 import librosa
 import numpy as np
 import soundfile as sf
+import os
+import json
 
-# Load environment variables
-load_dotenv()
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-
-# Configure genai with Google API key for Gemini model
+# Configure genai with Google API key for Gemini model using Streamlit secrets
+GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 genai.configure(api_key=GOOGLE_API_KEY)
 
 # Set up generation configuration for Google Gemini
@@ -22,9 +19,12 @@ generation_config = {
     "max_output_tokens": 1200,
 }
 
-# Set up Google Cloud credentials
-credentials = gdrive_credentials = st.secrets["gdrive_credentials"]
+# Set up Google Cloud credentials using Streamlit secrets
+service_account_info = json.loads(st.secrets["SERVICE_ACCOUNT_JSON"])
+credentials = service_account.Credentials.from_service_account_info(service_account_info)
 
+# Define the path for FFmpeg from Streamlit secrets
+FFMPEG_PATH = st.secrets["FFMPEG_PATH"]
 
 def download_youtube_audio(url):
     """Downloads audio from a YouTube video."""
@@ -32,8 +32,7 @@ def download_youtube_audio(url):
         'format': 'bestaudio',
         'outtmpl': 'downloads/%(title)s.%(ext)s',
         'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'wav', 'preferredquality': '192'}],
-        'ffmpeg_location': 'ffmpeg'  # No path needed for Streamlit Cloud or Linux servers
- # Update with your FFmpeg path
+        'ffmpeg_location': FFMPEG_PATH
     }
     try:
         with yt_dlp.YoutubeDL(options) as ydl:
@@ -74,10 +73,7 @@ def summarize_with_gemini(text):
     4. **Takeaways**: Highlight any actionable insights or lessons learned from the video.
 
     Transcription:
-
-    
 {text}
-
     """
     try:
         model = genai.GenerativeModel(model_name="gemini-1.5-flash", generation_config=generation_config)
@@ -113,8 +109,7 @@ if st.button("Summarize Video"):
                 summary = summarize_with_gemini(transcribed_text)
 
                 if summary:
-                    # Show the summary in full screen without a scrollbar
-                    st.markdown("<div style='height: 100vh; overflow: hidden;'><h3>Summary:</h3><p>{}</p></div>".format(summary), unsafe_allow_html=True)
+                    st.markdown("<h3>Summary:</h3><p>{}</p>".format(summary), unsafe_allow_html=True)
 
                     # Option to download the summary
                     st.download_button("Download Summary", summary, file_name="summary.txt")
