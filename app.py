@@ -23,7 +23,8 @@ generation_config = {
 }
 
 # Set up Google Cloud credentials
-credentials = service_account.Credentials.from_service_account_file(r"credentials\gen-lang-client-0244046939-8dce767c317a.json")
+credentials = gdrive_credentials = st.secrets["gdrive_credentials"]
+
 
 def download_youtube_audio(url):
     """Downloads audio from a YouTube video."""
