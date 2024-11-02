@@ -39,6 +39,12 @@ credentials_info = {
     # Authenticate with Google Drive API using the credentials
 credentials = service_account.Credentials.from_service_account_info(credentials_info)
 
+FFMPEG_PATH = "/tmp/ffmpeg"
+
+if not os.path.isfile(FFMPEG_PATH):
+    subprocess.run(["wget", "-O", FFMPEG_PATH, "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-i686-static.tar.xz"])
+    subprocess.run(["tar", "xf", FFMPEG_PATH, "--strip-components=1", "-C", "/tmp"])
+    os.chmod(FFMPEG_PATH, 0o755) 
 # Define the path for FFmpeg from Streamlit secrets
  # No path needed for Streamlit Cloud or Linux servers
 
@@ -49,7 +55,7 @@ def download_youtube_audio(url):
         'format': 'bestaudio',
         'outtmpl': 'downloads/%(title)s.%(ext)s',
         'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'wav', 'preferredquality': '192'}],
-        'ffmpeg_location': "/usr/bin/ffmpeg"
+        'ffmpeg_location': FFMPEG_PATH
     }
     try:
         with yt_dlp.YoutubeDL(options) as ydl:
