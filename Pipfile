@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+torch = "*"
 youtube-transcript-api = "*"
 beautifulsoup4 = "*"
 streamlit = "*"
@@ -23,6 +24,8 @@ openai-whisper = "*"
 librosa = "*"
 soundfile = "*"
 whisper = "*"
+
+
 
 [dev-packages]
 
