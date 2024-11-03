@@ -19,9 +19,10 @@ altair = "*"
 pytesseract = "*"
 numpy = "*"
 yt-dlp = "*"
-openai-whisper = "20230930" 
+openai-whisper = "*" 
 librosa = "*"
 soundfile = "*"
+whisper = "*"
 
 [dev-packages]
 
