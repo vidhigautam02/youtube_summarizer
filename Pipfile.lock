@@ -2566,7 +2566,7 @@
             ],
             "index": "pypi",
             "markers": "python_full_version >= '3.8.0'",
-            "version": "==2.5.1"
+            "version": "==2.0.1"
         },
         "tornado": {
             "hashes": [
