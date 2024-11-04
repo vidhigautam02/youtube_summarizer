@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a8349f8e6cffd96c0def1a5062c122885547c4110e89c5da7bbe48b39aa3d2bf"
+            "sha256": "7b17c95221fa53ccabe5651321c8e2435bb6a9642f16c61e2525be56fa48b6ba"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -2564,7 +2564,7 @@
                 "sha256:de5b7d6740c4b636ef4db92be922f0edc425b65ed78c5076c43c42d362a45457",
                 "sha256:ed231a4b3a5952177fafb661213d690a72caaad97d5824dd4fc17ab9e15cec03"
             ],
-            "index": "https://download.pytorch.org/whl/cpu",
+            "index": "pypi",
             "markers": "python_full_version >= '3.8.0'",
             "version": "==2.5.1"
         },
