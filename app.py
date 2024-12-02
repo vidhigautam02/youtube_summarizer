@@ -82,7 +82,7 @@ def summarize_with_groq(text):
     
     try:
         # Execute the Groq query using Groq API
-        response = client.execute(query)
+        response = client.query(query)
 
         # Process the response from Groq to generate a summary
         summary = []
