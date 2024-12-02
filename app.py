@@ -14,9 +14,6 @@ import subprocess
 GROQ_API_KEY = st.secrets["groq_api"]["GROQ_API_KEY"]  # Replace with your actual Groq API key
 client = groq.Client(api_key=GROQ_API_KEY)
 
-# Set up Google Cloud credentials using Streamlit secrets for Google Drive
-gdrive_credentials = st.secrets["gdrive_credentials"]
-
 
 FFMPEG_PATH = "/usr/bin/ffmpeg"
 
